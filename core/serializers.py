@@ -1,3 +1,4 @@
+# core/serializers.py
 from rest_framework import serializers
 from .models import Category, Produce, ProduceImage, NutritionInfo, HealthBenefit, Customer, Order, OrderItem, Testimonial, Media
 
@@ -7,7 +8,6 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'description']
 
 class ProduceImageSerializer(serializers.ModelSerializer):
-    # Rename 'image' to 'url' and 'alt_text' to 'alt' to match frontend expectations
     url = serializers.ImageField(source='image', read_only=True)
     alt = serializers.CharField(source='alt_text', read_only=True)
     
@@ -33,7 +33,6 @@ class ProduceSerializer(serializers.ModelSerializer):
     images = ProduceImageSerializer(many=True, read_only=True)
     nutrition = NutritionInfoSerializer(many=True, read_only=True)
     benefits = HealthBenefitSerializer(many=True, read_only=True)
-    # Ensure primary image field returns absolute URL
     image = serializers.ImageField(read_only=True)
 
     class Meta:
@@ -49,6 +48,12 @@ class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
         fields = ['id', 'name', 'email', 'phone_number']
+        
+    def validate_phone_number(self, value):
+        """Validate phone number format (e.g., starts with 07XX or 2547XX)."""
+        if value and not (value.startswith('07') or value.startswith('2547')):
+            raise serializers.ValidationError("Phone number must start with '07' or '2547'.")
+        return value
 
 class OrderItemSerializer(serializers.ModelSerializer):
     produce = ProduceSerializer(read_only=True)
@@ -60,6 +65,18 @@ class OrderItemSerializer(serializers.ModelSerializer):
         model = OrderItem
         fields = ['id', 'produce', 'produce_id', 'quantity', 'price']
 
+    def validate_quantity(self, value):
+        """Ensure quantity is positive."""
+        if value <= 0:
+            raise serializers.ValidationError("Quantity must be greater than 0.")
+        return value
+
+    def validate_price(self, value):
+        """Ensure price is positive."""
+        if value <= 0:
+            raise serializers.ValidationError("Price must be greater than 0.")
+        return value
+
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True)
     customer = CustomerSerializer(read_only=True)
@@ -69,11 +86,19 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ['id', 'customer', 'customer_id', 'order_date', 'total_price', 'status', 'items']
+        fields = ['id', 'customer', 'customer_id', 'order_date', 'total_price', 'status', 'items', 'checkout_request_id']
 
     def validate_items(self, value):
         if not value:
             raise serializers.ValidationError("Order must have at least one item.")
+        return value
+
+    def validate_total_price(self, value):
+        """Ensure total_price matches sum of item prices."""
+        items = self.initial_data.get('items', [])
+        calculated_total = sum(item['price'] * item['quantity'] for item in items)
+        if abs(float(value) - calculated_total) > 0.01:
+            raise serializers.ValidationError("Total price does not match sum of item prices.")
         return value
 
     def create(self, validated_data):
@@ -89,7 +114,7 @@ class OrderSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
         instance.save()
         if items_data is not None:
-            instance.items.all().delete()  # Clear existing items
+            instance.items.all().delete()
             for item_data in items_data:
                 OrderItem.objects.create(order=instance, **item_data)
         return instance
@@ -109,7 +134,6 @@ class TestimonialSerializer(serializers.ModelSerializer):
         fields = ['id', 'customer', 'customer_id', 'produce', 'produce_id', 'rating', 'comment', 'created_at']
 
 class MediaSerializer(serializers.ModelSerializer):
-    # Rename fields to match MediaGallery expectations
     url = serializers.ImageField(source='image', read_only=True)
     alt = serializers.CharField(source='title', read_only=True)
     caption = serializers.CharField(source='description', read_only=True, allow_null=True)

@@ -1,5 +1,6 @@
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -10,7 +11,7 @@ SECRET_KEY = 'django-insecure-c!em2p92&yz1spygcvv&ea8nmrtg*nkt8-gseil(ndiddc2yju
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 INSTALLED_APPS = [
@@ -56,12 +57,12 @@ TEMPLATES = [
 WSGI_APPLICATION = 'farm_backend.wsgi.application'
 
 # CORS settings
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173',  # Vite frontend
-]
+# Allow all origins (for testing only)
+CORS_ALLOW_ALL_ORIGINS = True
 
-# For absolute URLs in serializers
+# You can keep SITE_URL as-is for absolute URLs
 SITE_URL = 'http://127.0.0.1:8000'
+
 
 # Database
 DATABASES = {
@@ -112,3 +113,19 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,  # Adjust as needed
 }
+
+# STATIC_URL = '/static/'
+# STATICFILES_DIRS = [BASE_DIR / "static"]
+# STATIC_ROOT = BASE_DIR / 'staticfiles'
+# MEDIA_URL = '/media/'
+# MEDIA_ROOT = BASE_DIR / 'media'
+
+CONSUMER_KEY = os.getenv("CONSUMER_KEY", "your_consumer_key")
+CONSUMER_SECRET = os.getenv("CONSUMER_SECRET", "your_consumer_secret")
+MPESA_PASSKEY = os.getenv("MPESA_PASSKEY", "your_passkey")
+MPESA_SHORTCODE = os.getenv("MPESA_SHORTCODE", "174379")
+CALLBACK_URL = os.getenv("CALLBACK_URL", "http://127.0.0.1:8000/api/callback/")
+MPESA_BASE_URL = os.getenv("MPESA_BASE_URL", "https://sandbox.safaricom.co.ke")
+
+TIME_ZONE = 'Africa/Nairobi'
+USE_TZ = True
