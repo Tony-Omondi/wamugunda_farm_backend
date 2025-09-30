@@ -2,18 +2,10 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-
-
-    # Produce
-    path('produce/', views.produce_list, name='produce-list'),
-    path('produce/<int:pk>/', views.produce_detail, name='produce-detail'),
-
-    # Orders
-    path('orders/', views.order_create, name='order-create'),
-
-    # Testimonials
-    path('testimonials/', views.testimonial_list, name='testimonial-list'),
-
-    # Media
-    path('media/', views.media_list, name='media-list'),
+    path('categories/', views.category_list, name='category_list'),
+    path('produce/', views.produce_list, name='produce_list'),
+    path('produce/<int:pk>/', views.produce_detail, name='produce_detail'),
+    path('orders/', views.order_create, name='order_create'),
+    path('testimonials/', views.testimonial_list, name='testimonial_list'),
+    path('media/', views.media_list, name='media_list'),
 ]

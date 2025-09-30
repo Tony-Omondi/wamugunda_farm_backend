@@ -1,55 +1,45 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .serializers import ProduceSerializer, OrderSerializer, TestimonialSerializer, MediaSerializer
-from .models import Produce, Testimonial, Media
+from .serializers import CategorySerializer, ProduceSerializer, OrderSerializer, TestimonialSerializer, MediaSerializer
+from .models import Category, Produce, Testimonial, Media
 
+@api_view(['GET'])
+def category_list(request):
+    categories = Category.objects.all()
+    serializer = CategorySerializer(categories, many=True, context={'request': request})
+    return Response(serializer.data)
 
-# -------------------------
-# Static farm info
-# -------------------------
-
-
-# -------------------------
-# Produce
-# -------------------------
 @api_view(['GET'])
 def produce_list(request):
     produce = Produce.objects.filter(available=True)
-    serializer = ProduceSerializer(produce, many=True)
+    serializer = ProduceSerializer(produce, many=True, context={'request': request})
     return Response(serializer.data)
 
 @api_view(['GET'])
 def produce_detail(request, pk):
-    produce = Produce.objects.get(id=pk)
-    serializer = ProduceSerializer(produce)
-    return Response(serializer.data)
+    try:
+        produce = Produce.objects.get(id=pk)
+        serializer = ProduceSerializer(produce, context={'request': request})
+        return Response(serializer.data)
+    except Produce.DoesNotExist:
+        return Response({'error': 'Product not found'}, status=404)
 
-# -------------------------
-# Orders
-# -------------------------
 @api_view(['POST'])
 def order_create(request):
-    serializer = OrderSerializer(data=request.data)
+    serializer = OrderSerializer(data=request.data, context={'request': request})
     if serializer.is_valid():
-        order = serializer.save()
-        return Response(OrderSerializer(order).data)
+        serializer.save()
+        return Response(serializer.data, status=201)
     return Response(serializer.errors, status=400)
 
-# -------------------------
-# Testimonials
-# -------------------------
 @api_view(['GET'])
 def testimonial_list(request):
     testimonials = Testimonial.objects.all()
-    serializer = TestimonialSerializer(testimonials, many=True)
+    serializer = TestimonialSerializer(testimonials, many=True, context={'request': request})
     return Response(serializer.data)
 
-# -------------------------
-# Media
-# -------------------------
 @api_view(['GET'])
 def media_list(request):
-    media = Media.objects.all().order_by('-uploaded_at')  # newest first
-    serializer = MediaSerializer(media, many=True)
+    media = Media.objects.all()
+    serializer = MediaSerializer(media, many=True, context={'request': request})
     return Response(serializer.data)
-
