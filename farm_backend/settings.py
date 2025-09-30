@@ -9,7 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-c!em2p92&yz1spygcvv&ea8nmrtg*nkt8-gseil(ndiddc2yju'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -61,7 +61,7 @@ WSGI_APPLICATION = 'farm_backend.wsgi.application'
 CORS_ALLOW_ALL_ORIGINS = True
 
 # You can keep SITE_URL as-is for absolute URLs
-SITE_URL = 'http://127.0.0.1:8000'
+SITE_URL = 'https://wamugunda-farm-backend.onrender.com'
 
 
 # Database
